@@ -5,7 +5,7 @@
 // 2024.01.31
 // 
 // This script was specifically written for execution in iOS Shortcuts.
-// droidOS version: 1.0.0
+// droidOS version: 1.1.0
 // 
 
 
@@ -53,7 +53,8 @@ const EVERY_DAY = [
 const PayloadCommand = {
     speak: `SPEAK`,
     setTimer: `SET_TIMER`,
-    getWeather: `GET_WEATHER`
+    getWeather: `GET_WEATHER`,
+    playMusic: `PLAY_MUSIC`
 
 }
 
@@ -71,7 +72,7 @@ function deliverPayload(payload) {
 }
 
 function generateRandomId() {
-    const textCharacters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const textCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const min = Math.pow(10, 14); // Minimum 15-digit number
     const max = Math.pow(10, 15) - 1; // Maximum 15-digit number
 
@@ -102,7 +103,8 @@ function getRandomValueFromDictionary(dictionary) {
 
 // MARK: ACTION FRAMEWORK CONFIG
 class Action {
-    constructor(isEnabled, scheduleForDays, hour, minutes = 0, payload) {
+    constructor(tag = "Untitled Action", isEnabled, scheduleForDays, hour, minutes = 0, payload) {
+        this.tag = tag;
         this.isEnabled = isEnabled;
         this.scheduleForDays = scheduleForDays;
         this.hour = hour; // for an always-on action, pass currentHour
@@ -116,4 +118,29 @@ class Routine {
         this.actions = actions;
         this.isEnabled = isEnabled
     }
+
+    get tags() {
+        return this.actions.map(action => action.tag);
+    }
 }
+
+function runActionWithTag(tag) {
+    for (const routine of allSavedRoutines) {
+        for (const action of routine.actions) {
+            if (action.tag === tag) {
+                deliverPayload(action.payload)
+            }
+        }
+    }
+}
+
+function deliverAllActionTags(routines) {
+    let allActionTags = [];
+    
+    routines.forEach(routine => {
+        allActionTags = allActionTags.concat(routine.tags);
+    });
+    
+    document.write(allActionTags);
+}
+
